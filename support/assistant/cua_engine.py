@@ -129,9 +129,7 @@ class VLM_openai:
 class VLM_azure_openai:
     def __init__(self, api_key, base_url=default_base_url, MODEL_NAME=default_model_name, IMG_KEEP_N=3, api_version="2024-10-21"):
         print("loading azure openai...")
-        print(time.time())
         from openai import AzureOpenAI
-        print(time.time())
         self.API_KEY = api_key
         self.BASE_URL = base_url
         self.MODEL_NAME = MODEL_NAME 
