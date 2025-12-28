@@ -34,6 +34,12 @@ build/
 release/
 latest/
 
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+
 # General
 .DS_Store
 .AppleDouble

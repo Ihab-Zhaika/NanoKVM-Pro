@@ -3,6 +3,7 @@
     'api_key': 'sk-xxxxxxxx',
     'base_url': 'https://dashscope.aliyuncs.com/compatible-mode/v1',
     'model_name': 'qwen3-vl-plus-2025-09-23',
+    'api_version': '2024-10-21',
     'img_keep_n': 3,
     'max_rounds': 20,
     'initial_prompt': """You are an intelligent assistant operating on an IP-KVM. You have the ability to see the computer's desktop via screenshots and execute keyboard and mouse actions.

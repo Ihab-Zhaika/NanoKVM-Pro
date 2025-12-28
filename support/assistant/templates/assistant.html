@@ -301,6 +301,22 @@
                         <div style="padding: 10px">
                             <form id="settings-form">
                                 <div class="mb-3">
+                                    <label for="api-type" class="form-label"
+                                        >API Type</label
+                                    >
+                                    <select
+                                        class="form-control"
+                                        id="api-type"
+                                    >
+                                        <option value="DashScope">DashScope (Alibaba Cloud)</option>
+                                        <option value="OpenAI">OpenAI Compatible</option>
+                                        <option value="AzureOpenAI">Azure OpenAI</option>
+                                    </select>
+                                    <small class="form-text text-muted">
+                                        Select the API provider for the vision model.
+                                    </small>
+                                </div>
+                                <div class="mb-3">
                                     <label for="api-key" class="form-label"
                                         >API Key</label
                                     >
@@ -313,7 +329,7 @@
                                 </div>
                                 <div class="mb-3">
                                     <label for="base-url" class="form-label"
-                                        >Base URL</label
+                                        >Base URL / Azure Endpoint</label
                                     >
                                     <input
                                         type="text"
@@ -321,17 +337,37 @@
                                         id="base-url"
                                         placeholder="https://..."
                                     />
+                                    <small class="form-text text-muted">
+                                        For Azure OpenAI, use: https://&lt;resource-name&gt;.openai.azure.com
+                                    </small>
                                 </div>
                                 <div class="mb-3">
                                     <label for="model-name" class="form-label"
-                                        >Model Name</label
+                                        >Model Name / Deployment Name</label
                                     >
                                     <input
                                         type="text"
                                         class="form-control"
                                         id="model-name"
-                                        placeholder="e.g., qwen-vl-max-2025-08-13"
+                                        placeholder="e.g., gpt-4o, qwen-vl-max-2025-08-13"
                                     />
+                                    <small class="form-text text-muted">
+                                        For Azure OpenAI, use your deployment name.
+                                    </small>
+                                </div>
+                                <div class="mb-3" id="api-version-group">
+                                    <label for="api-version" class="form-label"
+                                        >API Version (Azure OpenAI only)</label
+                                    >
+                                    <input
+                                        type="text"
+                                        class="form-control"
+                                        id="api-version"
+                                        placeholder="2024-10-21"
+                                    />
+                                    <small class="form-text text-muted">
+                                        Azure OpenAI API version, e.g., 2024-10-21
+                                    </small>
                                 </div>
                                 <div class="mb-3">
                                     <label for="img-keep-n" class="form-label"
@@ -413,31 +449,54 @@
                 fetch("/settings")
                     .then((response) => response.json())
                     .then((data) => {
+                        document.getElementById("api-type").value = data.api_type || 'DashScope';
                         document.getElementById("api-key").value = data.api_key;
                         document.getElementById("base-url").value =
                             data.base_url;
                         document.getElementById("model-name").value =
                             data.model_name;
+                        document.getElementById("api-version").value =
+                            data.api_version || '2024-10-21';
                         document.getElementById("img-keep-n").value =
                             data.img_keep_n;
                         document.getElementById("max-rounds").value =
                             data.max_rounds;
                         document.getElementById("initial-prompt").value =
                             data.initial_prompt;
+                        // Update API version field visibility
+                        updateApiVersionVisibility();
                     });
             }
 
+            function updateApiVersionVisibility() {
+                const apiType = document.getElementById("api-type").value;
+                const apiVersionGroup = document.getElementById("api-version-group");
+                if (apiType === "AzureOpenAI") {
+                    apiVersionGroup.style.display = "block";
+                } else {
+                    apiVersionGroup.style.display = "none";
+                }
+            }
+
             function setupEventListeners() {
+                // API Type change handler
+                document.getElementById("api-type").addEventListener("change", function() {
+                    updateApiVersionVisibility();
+                });
+
                 // 设置表单提交
                 document
                     .getElementById("settings-form")
                     .addEventListener("submit", function (e) {
                         e.preventDefault();
                         const settings = {
+                            api_type: document.getElementById("api-type").value,
                             api_key: document.getElementById("api-key").value,
                             base_url: document.getElementById("base-url").value,
                             model_name:
                                 document.getElementById("model-name").value,
+                            api_version:
+                                document.getElementById("api-version").value,
                             img_keep_n:
                                 document.getElementById("img-keep-n").value,
                             max_rounds:

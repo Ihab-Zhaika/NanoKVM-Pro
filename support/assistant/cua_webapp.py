@@ -38,6 +38,7 @@ DEFAULT_SETTINGS = {
     'api_key': 'sk-xxxxxxxx',
     'base_url': 'https://dashscope.aliyuncs.com/compatible-mode/v1',
     'model_name': 'qwen3-vl-plus-2025-09-23',
+    'api_version': '2024-10-21',
     'img_keep_n': 3,
     'max_rounds': 20,
     'initial_prompt': """You are an intelligent assistant operating on an IP-KVM. You have the ability to see the computer's desktop via screenshots and execute keyboard and mouse actions.
@@ -110,7 +111,8 @@ def dummy_init_engine():
                 model_name=DEFAULT_SETTINGS['model_name'],
                 img_keep_n=DEFAULT_SETTINGS['img_keep_n'],
                 max_rounds=DEFAULT_SETTINGS['max_rounds'],
-                initial_prompt=DEFAULT_SETTINGS['initial_prompt']
+                initial_prompt=DEFAULT_SETTINGS['initial_prompt'],
+                api_version=DEFAULT_SETTINGS['api_version']
             )
             print("CUA_Engine initialized.")
 
@@ -183,6 +185,7 @@ def handle_settings():
             'api_key': data.get('api_key', DEFAULT_SETTINGS['api_key']),
             'base_url': data.get('base_url', DEFAULT_SETTINGS['base_url']),
             'model_name': data.get('model_name', DEFAULT_SETTINGS['model_name']),
+            'api_version': data.get('api_version', DEFAULT_SETTINGS['api_version']),
             'img_keep_n': int(data.get('img_keep_n', DEFAULT_SETTINGS['img_keep_n'])),
             'max_rounds': int(data.get('max_rounds', DEFAULT_SETTINGS['max_rounds'])),
             'initial_prompt': data.get('initial_prompt', DEFAULT_SETTINGS['initial_prompt'])
@@ -216,7 +219,8 @@ def start_task():
             model_name=DEFAULT_SETTINGS['model_name'],
             img_keep_n=DEFAULT_SETTINGS['img_keep_n'],
             max_rounds=DEFAULT_SETTINGS['max_rounds'],
-            initial_prompt=full_prompt
+            initial_prompt=full_prompt,
+            api_version=DEFAULT_SETTINGS['api_version']
         )
 
 

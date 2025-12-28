@@ -124,11 +124,57 @@ class VLM_openai:
             self.messages.append(completion.choices[0].message.model_dump())
         except Exception as e:
             return {'status': 'error', 'log': f"LLM API Error: {str(e)}"}
+        return {'status': 'ok', 'res': res}
+
+class VLM_azure_openai:
+    def __init__(self, api_key, base_url=default_base_url, MODEL_NAME=default_model_name, IMG_KEEP_N=3, api_version="2024-10-21"):
+        print("loading azure openai...")
+        from openai import AzureOpenAI
+        self.API_KEY = api_key
+        self.BASE_URL = base_url
+        self.MODEL_NAME = MODEL_NAME 
+        self.IMG_KEEP_N = IMG_KEEP_N
+        self.API_VERSION = api_version
+        self.client = AzureOpenAI(
+            api_key=self.API_KEY,
+            azure_endpoint=self.BASE_URL,
+            api_version=self.API_VERSION,
+        )  
+        self.reset()
+    def reset(self):
+        self.messages = [
+            {
+                "role": "system",
+                "content": [{"type": "text", "text": "You are a helpful assistant."}],
+            }
+        ]
+    def step(self, img_base64, prompt):
+        user_msg = {
+            "role": "user",
+            "content": [
+                {"type": "image_url", "image_url": {"url":f"data:image/jpeg;base64,{img_base64}"}},
+                {"type": "text", "text": prompt}
+            ]
+        }
+        self.messages.append(user_msg)
+        # clear old image to save Token
+        if len(self.messages) - 1 - self.IMG_KEEP_N * 2 >= 0:
+            del self.messages[len(self.messages) - 1 - self.IMG_KEEP_N * 2]["content"][0]
+        # call VLM
+        try:
+            completion = self.client.chat.completions.create(
+                model=self.MODEL_NAME,
+                messages=self.messages
+            )
+            res = completion.choices[0].message.content
+            self.messages.append(completion.choices[0].message.model_dump())
+        except Exception as e:
+            return {'status': 'error', 'log': f"Azure OpenAI API Error: {str(e)}"}
         return {'status': 'ok', 'res': res} 
 
 
 class CUA_Engine:
-    def __init__(self, api_type, api_key, base_url=default_base_url, model_name=default_model_name, img_keep_n=3, max_rounds=20, initial_prompt=default_initial_prompt):
+    def __init__(self, api_type, api_key, base_url=default_base_url, model_name=default_model_name, img_keep_n=3, max_rounds=20, initial_prompt=default_initial_prompt, api_version="2024-10-21"):
         self.API_TYPE = api_type
         self.API_KEY = api_key
         self.BASE_URL = base_url
@@ -136,12 +182,15 @@ class CUA_Engine:
         self.IMG_KEEP_N = img_keep_n
         self.MAX_ROUNDS = max_rounds
         self.initial_prompt = initial_prompt
+        self.API_VERSION = api_version
 
         # Accelerate startup, delay loading
         if self.API_TYPE == "DashScope":
             self.VLM = VLM_dashscope(api_key, self.BASE_URL, self.MODEL_NAME, self.IMG_KEEP_N)
         elif self.API_TYPE == "OpenAI":
             self.VLM = VLM_openai(api_key, self.BASE_URL, self.MODEL_NAME, self.IMG_KEEP_N)
+        elif self.API_TYPE == "AzureOpenAI":
+            self.VLM = VLM_azure_openai(api_key, self.BASE_URL, self.MODEL_NAME, self.IMG_KEEP_N, self.API_VERSION)
         elif self.API_TYPE == "google-genai":
             # TODO: google-genai is the slowest loading API
             # self.VLM = VLM_genai(api_key, self.BASE_URL, self.MODEL_NAME, self.IMG_KEEP_N)
